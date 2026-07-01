@@ -116,6 +116,55 @@
     padding: 9px 10px;
     background: #fff;
     }
+
+    .preview {
+      margin-top: 8px;
+      border: 1px solid #e5e5ea;
+      border-radius: 10px;
+      padding: 18px;
+      background: #fff;
+      min-height: 140px;
+    }
+
+    .placeholder {
+      color: #8e8e93;
+    }
+
+    .preview-word {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      margin-bottom: 16px;
+    }
+
+    .preview-label {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 14px;
+      margin-bottom: 4px;
+    }
+
+    .preview-definition {
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .preview-core {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .preview-associations {
+      white-space: pre-line;
+      line-height: 1.45;
+      color: #222;
+    }
+
+    .preview hr {
+      border: none;
+      border-top: 1px solid #e5e5ea;
+      margin: 16px 0;
+    }
   </style>
 </head>
 
@@ -150,8 +199,11 @@
 
   <div class="divider"></div>
 
-  <div class="label">Last TSV Output</div>
-  <textarea id="output" readonly></textarea>
+  <!-- Card Preview -->
+  <div class="label">Card Preview</div>
+  <div id="preview" class="preview">
+    <div class="placeholder">No card generated yet.</div>
+  </div>
   <button id="copy" class="secondary">Copy TSV</button>
 
   <div id="status"></div>
