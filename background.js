@@ -95,12 +95,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     (async () => {
         try {
         const decks = await ankiRequest("deckNames");
-        const models = await ankiRequest("modelNames");
+        const modelName = await ensureLexicalModel();
 
         sendResponse({
             ok: true,
             decks,
-            models
+            modelName
         });
         } catch (err) {
         sendResponse({
@@ -188,14 +188,13 @@ async function generateAndSave(word, autoAddAnki) {
 }
 
 async function addToAnki(data) {
-  const { ankiDeck, ankiModel } = await chrome.storage.local.get([
-    "ankiDeck",
-    "ankiModel"
-  ]);
+  const { ankiDeck } = await chrome.storage.local.get(["ankiDeck"]);
 
-  if (!ankiDeck || !ankiModel) {
+  if (!ankiDeck) {
     throw new Error("Choose Anki deck and note type first.");
   }
+
+  const modelName = await ensureLexicalModel();
 
   const assoc = data.associations
     .map(line => line.join(" · "))
@@ -204,7 +203,7 @@ async function addToAnki(data) {
   return await ankiRequest("addNote", {
     note: {
       deckName: ankiDeck,
-      modelName: ankiModel,
+      modelName,
       fields: {
         Word: data.word,
         Definition: data.definition,
@@ -275,4 +274,157 @@ async function ankiRequest(action, params = {}) {
   }
 
   return data.result;
+}
+
+
+async function ensureLexicalModel() {
+  const modelName = "Lexical Network";
+
+  const models = await ankiRequest("modelNames");
+
+  if (models.includes(modelName)) {
+    return modelName;
+  }
+
+  await ankiRequest("createModel", {
+    modelName,
+    inOrderFields: [
+      "Word",
+      "Definition",
+      "Core",
+      "Associations"
+    ],
+    cardTemplates: [
+      {
+        Name: "Card 1",
+        Front: `<div class="hint">
+  Think of the word.
+</div>
+
+<div class="word">
+  {{Word}}
+</div>
+`.trim(),
+        Back: `<div class="word">
+  {{Word}}
+</div>
+
+<hr>
+
+<div class="label">Definition</div>
+<div class="definition">
+  {{Definition}}
+</div>
+
+<div class="label">Core</div>
+<div class="core small">
+  {{Core}}
+</div>
+
+<div class="label">Associations</div>
+<div class="associations"> {{Associations}}
+</div>`.trim()
+      }
+    ],
+    css: `.card {
+    font-family: -apple-system !important;
+    background: white;
+    color: #1d1d1f;
+
+    font-size: 21px;
+    line-height: 1.65;
+
+    padding: 36px;
+
+    text-align: left;
+
+    max-width: 760px;
+    margin: auto;
+}
+
+/* Answer */
+
+.word {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+
+    margin-bottom: 26px;
+}
+
+/* 标题 */
+
+.label {
+
+    font-size: 21px;
+
+    font-weight: 600;
+
+    margin-top: 24px;
+
+    margin-bottom: 6px;
+
+}
+
+/* Core */
+
+.core {
+
+    font-size: 30px;
+
+    font-weight: 600;
+
+    margin-bottom: 18px;
+}
+
+.core.small {
+
+    font-size: 20px;
+
+    margin-bottom: 12px;
+}
+
+/* Definition */
+
+.definition {
+
+    font-size: 21px;
+
+    margin-bottom: 10px;
+}
+
+/* Associations */
+
+.associations {
+    font-size: 21px;
+    line-height: 1.8;
+ white-space: pre-line;
+}
+
+.associations span {
+    display: inline-block;
+    background: #f5f5f7;
+    color: #1d1d1f;
+
+    padding: 3px 10px;
+    margin: 4px 5px 4px 0;
+
+    border-radius: 999px;
+
+    font-size: 20px;
+    line-height: 1.4;
+}
+/* 分割线 */
+
+hr {
+
+    border: none;
+
+    border-top: 1px solid #e5e5ea;
+
+    margin: 28px 0;
+}`.trim()
+  });
+
+  return modelName;
 }

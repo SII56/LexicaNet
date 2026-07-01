@@ -3,21 +3,16 @@ const statusEl = document.getElementById("status");
 const wordInput = document.getElementById("wordInput");
 const autoAddAnkiEl = document.getElementById("autoAddAnki");
 const deckSelect = document.getElementById("deckSelect");
-const modelSelect = document.getElementById("modelSelect");
 const previewEl = document.getElementById("preview");
 
 chrome.storage.local.get(
-  ["apiKey", "lastTsv", "lastJson", "autoAddAnki", "ankiDeck", "ankiModel"],
+  ["apiKey", "lastTsv", "lastJson", "autoAddAnki", "ankiDeck"],
   (res) => {
     apiKeyInput.value = res.apiKey || "";
     autoAddAnkiEl.checked = !!res.autoAddAnki;
 
     if (res.ankiDeck) {
       deckSelect.innerHTML = `<option>${res.ankiDeck}</option>`;
-    }
-
-    if (res.ankiModel) {
-      modelSelect.innerHTML = `<option>${res.ankiModel}</option>`;
     }
 
     if (res.lastJson) {
@@ -57,10 +52,6 @@ autoAddAnkiEl.addEventListener("change", () => {
 
 deckSelect.addEventListener("change", () => {
   chrome.storage.local.set({ ankiDeck: deckSelect.value });
-});
-
-modelSelect.addEventListener("change", () => {
-  chrome.storage.local.set({ ankiModel: modelSelect.value });
 });
 
 document.getElementById("generate").addEventListener("click", () => {
@@ -107,13 +98,11 @@ document.getElementById("loadAnki").addEventListener("click", () => {
       return;
     }
 
-    chrome.storage.local.get(["ankiDeck", "ankiModel"], (saved) => {
+    chrome.storage.local.get(["ankiDeck"], (saved) => {
       fillSelect(deckSelect, res.decks, saved.ankiDeck);
-      fillSelect(modelSelect, res.models, saved.ankiModel);
 
       chrome.storage.local.set({
         ankiDeck: deckSelect.value,
-        ankiModel: modelSelect.value
       });
     });
 
@@ -188,13 +177,11 @@ function loadAnkiOptions() {
       return;
     }
 
-    chrome.storage.local.get(["ankiDeck", "ankiModel"], (saved) => {
+    chrome.storage.local.get(["ankiDeck"], (saved) => {
       fillSelect(deckSelect, res.decks, saved.ankiDeck);
-      fillSelect(modelSelect, res.models, saved.ankiModel);
 
       chrome.storage.local.set({
         ankiDeck: deckSelect.value,
-        ankiModel: modelSelect.value
       });
 
       statusEl.textContent = "Anki loaded.";
