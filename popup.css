@@ -1,0 +1,423 @@
+/*
+ * Copyright (c) 2026 SII56
+ * SPDX-License-Identifier: MIT
+ * See the LICENSE file in the project root for the full license text.
+ */
+
+/* Auto follows the OS until an explicit preference is loaded. */
+:root {
+  color-scheme: light;
+  --background: #fff;
+  --text: #252525;
+  --secondary: #666;
+  --muted: #888;
+  --border: #eaeaea;
+  --hover: #f5f5f5;
+  --selected: #f3f3f3;
+  --button-hover: #404040;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #191919;
+  --text: #ededed;
+  --secondary: #b8b8b8;
+  --muted: #a0a0a0;
+  --border: #363636;
+  --hover: #292929;
+  --selected: #2b2b2b;
+  --button-hover: #d3d3d3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: #191919;
+    --text: #ededed;
+    --secondary: #b8b8b8;
+    --muted: #a0a0a0;
+    --border: #363636;
+    --hover: #292929;
+    --selected: #2b2b2b;
+    --button-hover: #d3d3d3;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Shared page layout and form controls. */
+body {
+  width: 410px;
+  margin: 0;
+  padding: 24px;
+  background: var(--background);
+  color: var(--text);
+  font: 13px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button, input, textarea, select {
+  width: 100%;
+  border-radius: 3px;
+}
+
+button {
+  border: 1px solid var(--text);
+  padding: 10px 12px;
+  background: var(--text);
+  color: var(--background);
+  cursor: pointer;
+  margin-top: 8px;
+  font-weight: 550;
+}
+
+button.secondary {
+  border-color: var(--border);
+  background: var(--background);
+  color: var(--secondary);
+}
+
+button:hover:not(:disabled) {
+  background: var(--button-hover);
+  color: var(--background);
+}
+
+button.secondary:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+
+button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 3px;
+}
+
+input, textarea, select {
+  padding: 9px 10px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: var(--background);
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--muted);
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.65;
+}
+
+/* Brand and page navigation. */
+.brand-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+h2 {
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: -1px;
+  margin: 0;
+}
+
+.brand-dot {
+  color: var(--muted);
+}
+
+.pending-badge {
+  padding: 4px 8px;
+  background: var(--selected);
+  border-radius: 3px;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+/* Section labels and compact input rows. */
+.label, .preview-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 24px 0 9px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.row > * {
+  min-width: 0;
+  flex: 1;
+}
+
+.row button {
+  margin-top: 0;
+}
+
+.search-row input {
+  flex: 1;
+}
+
+.search-row button {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+details {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+}
+
+summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--secondary);
+}
+
+details[open] summary {
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+details .label {
+  margin-top: 12px;
+}
+
+details .row {
+  margin-top: 9px;
+}
+
+.edit-help, .placeholder {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.edit-help {
+  margin: 8px 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 24px 0;
+}
+
+/* Collection list and selected draft. */
+#pendingList {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+button.pending-item {
+  text-align: left;
+  border: 1px solid transparent;
+  padding: 12px;
+  margin: 2px 0;
+  background: var(--background);
+}
+
+button.pending-item.selected {
+  background: var(--selected);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.pending-item strong, .pending-item span {
+  display: block;
+}
+
+.pending-item strong {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pending-item span {
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 4px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* Editable note fields: subtle borders until hover or focus. */
+.preview {
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  margin-top: 12px;
+  min-height: 100px;
+}
+
+.preview fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.preview input, .preview textarea {
+  border-color: transparent;
+  padding: 6px 8px;
+  margin-left: -8px;
+  width: calc(100% + 8px);
+}
+
+.preview input:hover, .preview textarea:hover {
+  border-color: var(--border);
+}
+
+.preview input:focus, .preview textarea:focus {
+  border-color: var(--muted);
+}
+
+.preview textarea {
+  height: auto;
+  font-family: inherit;
+  white-space: pre-wrap;
+}
+
+#editWord {
+  font: 400 38px/1.25 Georgia, "Times New Roman", serif;
+  letter-spacing: -1px;
+}
+
+#editCore {
+  border-left: 2px solid var(--text);
+  border-radius: 0;
+  margin-left: 0;
+  width: 100%;
+  padding-left: 14px;
+  font: 400 22px/1.5 Georgia, serif;
+}
+
+#previewMetadata {
+  margin: 4px 0 16px;
+}
+
+#addToAnki {
+  margin-top: 22px;
+  padding: 13px;
+}
+
+/* Submission controls and status feedback. */
+.utility-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.utility-actions button.secondary {
+  padding: 3px 0;
+  border: 0;
+  font-size: 10px;
+  color: var(--muted);
+  margin: 0;
+  width: auto;
+}
+
+.utility-actions button.secondary:hover {
+  background: none;
+  color: var(--text);
+}
+
+#status {
+  margin-top: 15px;
+  min-height: 20px;
+  color: var(--secondary);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+/* Navigation actions and settings sections. */
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-button {
+  width: auto;
+  margin: 0;
+  padding: 4px 0;
+  font-size: 11px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+
+.nav-button:hover:not(:disabled) {
+  background: none;
+  color: var(--text);
+}
+
+.back-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.brand-icon {
+  display: block;
+  width: 29px;
+  height: 29px;
+  flex-shrink: 0;
+}
+
+.settings-section {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  margin-top: 20px;
+}
+
+.settings-section h3 {
+  font-size: 14px;
+  font-weight: 550;
+  margin: 0 0 10px;
+}
+
+.settings-section .label {
+  margin-top: 15px;
+}
+
+.settings-section .row {
+  margin-top: 10px;
+}
+
+#systemPrompt {
+  height: 320px;
+  white-space: pre-wrap;
+  font: 12px/1.7 ui-monospace, monospace;
+}

@@ -1,3 +1,4 @@
+## LexicaNet
 Learn words as connected concepts, not isolated definitions.
 
 Instead of generating dictionary-style flashcards, this extension builds lexical activation networks to help learners strengthen productive vocabulary for speaking and writing.
