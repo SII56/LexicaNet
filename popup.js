@@ -1,88 +1,96 @@
-const apiKeyInput = document.getElementById("apiKey");
-const statusEl = document.getElementById("status");
-const wordInput = document.getElementById("wordInput");
-const autoAddAnkiEl = document.getElementById("autoAddAnki");
-const deckSelect = document.getElementById("deckSelect");
-const previewEl = document.getElementById("preview");
+const elements = {
+  apiKey: document.getElementById("apiKey"),
+  word: document.getElementById("wordInput"),
+  status: document.getElementById("status"),
+  autoAddAnki: document.getElementById("autoAddAnki"),
+  deck: document.getElementById("deckSelect"),
+  preview: document.getElementById("preview"),
+};
 
-chrome.storage.local.get(
-  ["apiKey", "lastTsv", "lastJson", "autoAddAnki", "ankiDeck"],
-  (res) => {
-    apiKeyInput.value = res.apiKey || "";
-    autoAddAnkiEl.checked = !!res.autoAddAnki;
+async function initialize() {
+  const settings = await chrome.storage.local.get([
+    "apiKey",
+    "lastJson",
+    "autoAddAnki",
+    "ankiDeck"
+  ]);
 
-    if (res.ankiDeck) {
-      deckSelect.innerHTML = `<option>${res.ankiDeck}</option>`;
-    }
+  elements.apiKey.value = settings.apiKey || "";
+  elements.autoAddAnki.checked = !!settings.autoAddAnki;
 
-    if (res.lastJson) {
-      renderPreview(res.lastJson);
-    }
+  if (settings.ankiDeck) {
+    elements.deck.innerHTML = `<option>${settings.ankiDeck}</option>`;
   }
-);
+
+  if (settings.lastJson) {
+    renderPreview(settings.lastJson);
+  }
+}
+
+initialize();
 
 document.getElementById("save").addEventListener("click", () => {
-  chrome.storage.local.set({ apiKey: apiKeyInput.value.trim() }, () => {
-    statusEl.textContent = "Saved.";
+  chrome.storage.local.set({ apiKey: elements.apiKey.value.trim() }, () => {
+    elements.status.textContent = "Saved.";
   });
 });
 
 document.getElementById("test").addEventListener("click", () => {
-  statusEl.textContent = "Testing...";
+  elements.status.textContent = "Testing...";
 
   chrome.runtime.sendMessage({ type: "TEST_CONNECTIONS" }, (res) => {
     if (chrome.runtime.lastError) {
-      statusEl.textContent = chrome.runtime.lastError.message;
+      elements.status.textContent = chrome.runtime.lastError.message;
       return;
     }
 
     if (!res?.ok) {
-      statusEl.textContent = res?.error || "Test failed.";
+      elements.status.textContent = res?.error || "Test failed.";
       return;
     }
 
-    statusEl.textContent =
+    elements.status.textContent =
       `DeepSeek: ${res.deepseek ? "OK" : "Failed"} · Anki: ${res.anki ? "OK" : "Failed"}`;
   });
 });
 
-autoAddAnkiEl.addEventListener("change", () => {
-  chrome.storage.local.set({ autoAddAnki: autoAddAnkiEl.checked });
+elements.autoAddAnki.addEventListener("change", () => {
+  chrome.storage.local.set({ autoAddAnki: elements.autoAddAnki.checked });
 });
 
-deckSelect.addEventListener("change", () => {
-  chrome.storage.local.set({ ankiDeck: deckSelect.value });
+elements.deck.addEventListener("change", () => {
+  chrome.storage.local.set({ ankiDeck: elements.deck.value });
 });
 
 document.getElementById("generate").addEventListener("click", () => {
-  const word = wordInput.value.trim();
+  const word = elements.word.value.trim();
 
   if (!word) {
-    statusEl.textContent = "Enter a word first.";
+    elements.status.textContent = "Enter a word first.";
     return;
   }
 
-  statusEl.textContent = "Generating...";
+  elements.status.textContent = "Generating...";
 
   chrome.runtime.sendMessage({
     type: "GENERATE_TSV",
     word,
-    autoAddAnki: autoAddAnkiEl.checked
+    autoAddAnki: elements.autoAddAnki.checked
   }, (res) => {
     if (chrome.runtime.lastError) {
-      statusEl.textContent = chrome.runtime.lastError.message;
+      elements.status.textContent = chrome.runtime.lastError.message;
       return;
     }
 
     if (!res?.ok) {
-      statusEl.textContent = res?.error || "Failed.";
+      elements.status.textContent = res?.error || "Failed.";
       return;
     }
 
     if (res.data) {
       renderPreview(res.data);
     }
-    statusEl.textContent = res.addedToAnki
+    elements.status.textContent = res.addedToAnki
       ? "Generated and added to Anki."
       : "Generated.";
   });
@@ -90,23 +98,23 @@ document.getElementById("generate").addEventListener("click", () => {
 
 
 document.getElementById("loadAnki").addEventListener("click", () => {
-  statusEl.textContent = "Loading Anki...";
+  elements.status.textContent = "Loading Anki...";
 
   chrome.runtime.sendMessage({ type: "LOAD_ANKI_OPTIONS" }, (res) => {
     if (!res?.ok) {
-      statusEl.textContent = res?.error || "Failed to load Anki.";
+      elements.status.textContent = res?.error || "Failed to load Anki.";
       return;
     }
 
     chrome.storage.local.get(["ankiDeck"], (saved) => {
-      fillSelect(deckSelect, res.decks, saved.ankiDeck);
+      fillSelect(elements.deck, res.decks, saved.ankiDeck);
 
       chrome.storage.local.set({
-        ankiDeck: deckSelect.value,
+        ankiDeck: elements.deck.value,
       });
     });
 
-    statusEl.textContent = "Anki loaded.";
+    elements.status.textContent = "Anki loaded.";
   });
 });
 
@@ -114,12 +122,12 @@ document.getElementById("copy").addEventListener("click", async () => {
   const res = await chrome.storage.local.get(["lastTsv"]);
 
   if (!res.lastTsv) {
-    statusEl.textContent = "No TSV output.";
+    elements.status.textContent = "No TSV output.";
     return;
   }
 
   await navigator.clipboard.writeText(res.lastTsv);
-  statusEl.textContent = "Copied.";
+  elements.status.textContent = "Copied.";
 });
 
 function renderPreview(data) {
@@ -127,7 +135,7 @@ function renderPreview(data) {
     .map(line => line.join(" · "))
     .join("\n");
 
-  previewEl.innerHTML = `
+  elements.preview.innerHTML = `
     <div class="preview-word">${escapeHtml(data.word)}</div>
 
     <hr>
@@ -173,18 +181,18 @@ function fillSelect(selectEl, items, savedValue) {
 function loadAnkiOptions() {
   chrome.runtime.sendMessage({ type: "LOAD_ANKI_OPTIONS" }, (res) => {
     if (!res?.ok) {
-      statusEl.textContent = res?.error || "Failed to load Anki.";
+      elements.status.textContent = res?.error || "Failed to load Anki.";
       return;
     }
 
     chrome.storage.local.get(["ankiDeck"], (saved) => {
-      fillSelect(deckSelect, res.decks, saved.ankiDeck);
+      fillSelect(elements.deck, res.decks, saved.ankiDeck);
 
       chrome.storage.local.set({
-        ankiDeck: deckSelect.value,
+        ankiDeck: elements.deck.value,
       });
 
-      statusEl.textContent = "Anki loaded.";
+      elements.status.textContent = "Anki loaded.";
     });
   });
 }

@@ -29,6 +29,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+
 chrome.contextMenus.onClicked.addListener(async (info) => {
   if (info.menuItemId !== "generate-anki-tsv") return;
 
@@ -37,14 +38,7 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
   if (!word) return;
 
   try {
-    const { autoAddAnki } = await chrome.storage.local.get(["autoAddAnki"]);
-
-    if (!autoAddAnki) {
-      console.log("Auto add is disabled. Open popup to preview or enable auto add.");
-      return;
-    }
-
-    const result = await generateAndSave(word, true);
+    const result = await generateAndSave(word);
     console.log("Added from context menu:", result);
   } catch (err) {
     console.error(err);
@@ -53,6 +47,7 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "GENERATE_TSV") {
+    
     generateAndSave(msg.word)
       .then((result) => {
         sendResponse({
@@ -155,7 +150,8 @@ function jsonToTsv(data) {
   ].join("\t");
 }
 
-async function generateAndSave(word, autoAddAnki) {
+//This function will call api to output into anki
+async function generateAndSave(word) {
   const { apiKey } = await chrome.storage.local.get([
     "apiKey"
   ]);
@@ -175,6 +171,7 @@ async function generateAndSave(word, autoAddAnki) {
 
   let addedToAnki = false;
 
+  const { autoAddAnki } = await chrome.storage.local.get(["autoAddAnki"]);
   if (autoAddAnki) {
     await addToAnki(data);
     addedToAnki = true;
